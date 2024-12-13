@@ -96,7 +96,39 @@ else:
     prediction = clf.predict(input_df)
   
 # Show prediction result
-if prediction == 1:
-    st.write("Prediction: **Yes**, the employee is likely to leave.")
-else:
-    st.write("Prediction: **No**, the employee is likely to stay.")
+#if prediction == 1:
+    #st.write("Prediction: **Yes**, the employee is likely to leave.")
+#else:
+    #st.write("Prediction: **No**, the employee is likely to stay.")
+# Example: 70% chance of attrition (Yes), 30% chance of staying (No)
+probabilities = clf.predict_proba(input_df)[0]
+
+# Create a DataFrame for the prediction
+df_prediction_proba = pd.DataFrame({
+    'Attrition (Yes)': [probabilities[1]],
+    'Attrition (No)': [probabilities[0]]
+})
+
+# Display predicted attrition probabilities using progress bars
+st.subheader('Predicted Attrition Probabilities')
+st.dataframe(df_prediction_proba,
+             column_config={
+               'Attrition (Yes)': st.column_config.ProgressColumn(
+                 'Attrition (Yes)',
+                 format='%f',
+                 width='medium',
+                 min_value=0,
+                 max_value=1
+               ),
+               'Attrition (No)': st.column_config.ProgressColumn(
+                 'Attrition (No)',
+                 format='%f',
+                 width='medium',
+                 min_value=0,
+                 max_value=1
+               ),
+             }, hide_index=True)
+
+# Display the predicted result (Yes or No)
+prediction_label = "Yes" if probabilities[1] > 0.5 else "No"
+st.success(f"Prediction: The employee is likely to leave (Attrition: {prediction_label})")
