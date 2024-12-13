@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
+import xgboost as xgb
 
 st.title('Attrition Prediction')
 
@@ -14,7 +14,7 @@ st.subheader("Is your job worth keeping? Should you stay? Or just leave? Let's t
 st.write("You can see below for more information")
 
 # Load dataset (Ensure the CSV file is in the correct location)
-df = pd.read_csv("https://raw.githubusercontent.com/ibniinggrianti/attritionpredicttest/refs/heads/master/editedIBM-HR-Analytics-Employee-Attrition-and-Performance-Revised.csv")
+df = pd.read_csv("editedIBM-HR-Analytics-Employee-Attrition-and-Performance-Revised.csv")
 
 # Data Preprocessing
 # Encoding categorical variables
@@ -27,8 +27,8 @@ y = df_encoded['Attrition_Yes']  # Target (1 if attrition, 0 if no attrition)
 # Split data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Random Forest Classifier
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
+# XGBoost Classifier
+clf = xgb.XGBClassifier(n_estimators=100, random_state=42)
 clf.fit(X_train, y_train)
 
 # Model accuracy
@@ -43,7 +43,7 @@ st.sidebar.header("Input Features for Prediction")
 
 age = st.sidebar.slider("Age", 18, 60, 30)
 business_travel = st.sidebar.selectbox("Business Travel", ["Travel_Rarely", "Travel_Frequently", "Non-Travel"])
-department = st.sidebar.selectbox("Department", ["Sales", "Research & Development", "Human Resources", "Technology"])
+department = st.sidebar.selectbox("Department", ["Sales", "Research & Development", "Human Resources"])
 education = st.sidebar.selectbox("Education", ["Below College", "College", "Bachelor", "Master", "Doctor"])
 gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
 job_level = st.sidebar.selectbox("Job Level", ["Junior Level", "Mid Level", "Senior Level"])
@@ -78,6 +78,11 @@ input_data = {
     "PerformanceRating_Outstanding": [1 if performance_rating == "Outstanding" else 0],
     "PerformanceRating_Excellent": [1 if performance_rating == "Excellent" else 0],
     "WorkLifeBalance_Better": [1 if work_life_balance == "Better" else 0],
+    # Add other job roles here similarly...
+    # For simplicity, assuming only two job roles are present in the dataset.
+    # You can add more job roles similarly.
+    # ...
+    # Continue adding other features similarly...
 }
 
 input_df = pd.DataFrame(input_data)
@@ -96,11 +101,12 @@ else:
     prediction = clf.predict(input_df)
   
 # Show prediction result
-#if prediction == 1:
-    #st.write("Prediction: **Yes**, the employee is likely to leave.")
-#else:
-    #st.write("Prediction: **No**, the employee is likely to stay.")
-# Example: 70% chance of attrition (Yes), 30% chance of staying (No)
+if prediction == 1:
+    st.write("Prediction: **Yes**, the employee is likely to leave.")
+else:
+    st.write("Prediction: **No**, the employee is likely to stay.")
+
+# Example: Display predicted attrition probabilities using progress bars
 probabilities = clf.predict_proba(input_df)[0]
 
 # Create a DataFrame for the prediction
