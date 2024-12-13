@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 st.title('Attrition Prediction')
 
-#st.subheader("Is your job worth keeping? Should you stay? Or just leave? Let's try!")
+st.subheader("Is your job worth keeping? Should you stay? Or just leave? Let's try!")
 st.write("You can see below for more information")
 
 # Load dataset (Ensure the CSV file is in the correct location)
@@ -77,7 +77,6 @@ with st.expander('Data Preparation'):
 
 # Train Random Forest model
 clf = RandomForestClassifier(random_state=42)
-clf.fit(X_train, y_train)
 
 # Step 1: Check for missing values
 missing_data = X.isnull().sum()
