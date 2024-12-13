@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
 
 st.title('Attrition Prediction')
 
@@ -77,6 +78,7 @@ with st.expander('Data Preparation'):
 
 # Train Random Forest model
 clf = RandomForestClassifier(random_state=42)
+encoder = LabelEncoder()
 
 # Step 1: Check for missing values
 missing_data = X.isnull().sum()
