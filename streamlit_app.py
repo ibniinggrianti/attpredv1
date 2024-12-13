@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
 
 st.title('Attrition Prediction')
 
@@ -76,38 +78,77 @@ with st.expander('Data Preparation'):
   st.write('**Encoded y**')
   st.dataframe(y)
 
-# Train Random Forest model
-clf = RandomForestClassifier(random_state=42)
-encoder = LabelEncoder()
+# Data Preprocessing
+# Encoding categorical variables
+df_encoded = pd.get_dummies(df, drop_first=True)
 
-# Step 1: Check for missing values
-missing_data = X.isnull().sum()
+# Features and Target
+X = df_encoded.drop('Attrition_Yes', axis=1)  # Features
+y = df_encoded['Attrition_Yes']  # Target (1 if attrition, 0 if no attrition)
 
-# Drop rows with missing values in any column
-X_clean = X_raw.copy()
-X_clean = pd.get_dummies(X_clean, drop_first=True)
-st.write(X_clean.isnull().sum())
-X_clean = X.dropna()
+# Split data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Drop columns with missing values
-X_clean = X.dropna(axis=1)
+# Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
 
-# Step 3: Check for missing values again after handling
-missing_data_after = X_clean.isnull().sum()
-st.write("Missing Values After Cleaning:", missing_data_after)
+# Model accuracy
+y_pred = clf.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
 
-#y = y_raw.apply(target_encode)
-#st.write(y.isnull().sum())  # Check if there are missing values in y
-st.write(X_clean.shape)
-# Step 4: Train model with cleaned data
-clf.fit(X_clean, y)
+# Show accuracy in Streamlit
+st.write(f"Model Accuracy: {accuracy*100:.2f}%")
 
-# Make predictions
-prediction = clf.predict(input_row)
-prediction_proba = clf.predict_proba(input_row)
+# Sidebar for user input
+st.sidebar.header("Input Features for Prediction")
 
-# Display results in Streamlit
-with st.expander('Model Prediction'):
-    st.write(f"**Prediction:** {'Attrition' if prediction[0] == 1 else 'No Attrition'}")
-    st.write("**Prediction Probabilities:**")
-    st.dataframe(pd.DataFrame(prediction_proba, columns=['No Attrition', 'Attrition']))
+age = st.sidebar.slider("Age", 18, 60, 30)
+business_travel = st.sidebar.selectbox("Business Travel", ["Travel_Rarely", "Travel_Frequently", "Non-Travel"])
+department = st.sidebar.selectbox("Department", ["Sales", "Research & Development", "Human Resources", "Technology"])
+education = st.sidebar.selectbox("Education", ["Below College", "College", "Bachelor", "Master", "Doctor"])
+gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
+job_level = st.sidebar.selectbox("Job Level", ["Junior Level", "Mid Level", "Senior Level"])
+job_role = st.sidebar.selectbox("Job Role", ["Sales Executive", "Research Scientist", "Manager", "Technician"])
+job_satisfaction = st.sidebar.selectbox("Job Satisfaction", ["Low", "Medium", "High", "Very High"])
+marital_status = st.sidebar.selectbox("Marital Status", ["Single", "Married", "Divorced"])
+overtime = st.sidebar.selectbox("Overtime", ["Yes", "No"])
+performance_rating = st.sidebar.selectbox("Performance Rating", ["Excellent", "Outstanding", "Good", "Average"])
+work_life_balance = st.sidebar.selectbox("Work-Life Balance", ["Bad", "Better", "Excellent"])
+
+# Create input feature vector for prediction
+input_data = {
+    "Age": [age],
+    "BusinessTravel_Travel_Frequently": [1 if business_travel == "Travel_Frequently" else 0],
+    "BusinessTravel_Travel_Rarely": [1 if business_travel == "Travel_Rarely" else 0],
+    "Department_Research & Development": [1 if department == "Research & Development" else 0],
+    "Department_Sales": [1 if department == "Sales" else 0],
+    "Education_Below College": [1 if education == "Below College" else 0],
+    "Education_College": [1 if education == "College" else 0],
+    "Education_Bachelor": [1 if education == "Bachelor" else 0],
+    "Education_Master": [1 if education == "Master" else 0],
+    "Education_Doctor": [1 if education == "Doctor" else 0],
+    "Gender_Male": [1 if gender == "Male" else 0],
+    "JobLevel_Mid Level": [1 if job_level == "Mid Level" else 0],
+    "JobLevel_Senior Level": [1 if job_level == "Senior Level" else 0],
+    "JobRole_Research Scientist": [1 if job_role == "Research Scientist" else 0],
+    "JobRole_Sales Executive": [1 if job_role == "Sales Executive" else 0],
+    "JobSatisfaction_Medium": [1 if job_satisfaction == "Medium" else 0],
+    "JobSatisfaction_Very High": [1 if job_satisfaction == "Very High" else 0],
+    "MaritalStatus_Married": [1 if marital_status == "Married" else 0],
+    "OverTime_Yes": [1 if overtime == "Yes" else 0],
+    "PerformanceRating_Outstanding": [1 if performance_rating == "Outstanding" else 0],
+    "PerformanceRating_Excellent": [1 if performance_rating == "Excellent" else 0],
+    "WorkLifeBalance_Better": [1 if work_life_balance == "Better" else 0],
+}
+
+input_df = pd.DataFrame(input_data)
+
+# Make prediction
+prediction = clf.predict(input_df)
+
+# Show prediction result
+if prediction == 1:
+    st.write("Prediction: **Yes**, the employee is likely to leave.")
+else:
+    st.write("Prediction: **No**, the employee is likely to stay.")
