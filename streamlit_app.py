@@ -82,6 +82,7 @@ clf = RandomForestClassifier(random_state=42)
 missing_data = X.isnull().sum()
 
 # Drop rows with missing values in any column
+X_clean = X_raw.copy()
 X_clean = pd.get_dummies(X_clean, drop_first=True)
 st.write(X_clean.isnull().sum())
 X_clean = X.dropna()
