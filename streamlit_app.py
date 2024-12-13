@@ -144,9 +144,19 @@ input_data = {
 
 input_df = pd.DataFrame(input_data)
 
-# Make prediction
+# Ensure the input data has the same columns as the training data
+input_df = input_df.reindex(columns=X_train.columns, fill_value=0)
+
+# Now, make the prediction
 prediction = clf.predict(input_df)
 
+# Compare the columns of the training data and the input data
+missing_cols = set(X_train.columns) - set(input_df.columns)
+if missing_cols:
+    st.write(f"Missing columns: {missing_cols}")
+else:
+    prediction = clf.predict(input_df)
+  
 # Show prediction result
 if prediction == 1:
     st.write("Prediction: **Yes**, the employee is likely to leave.")
