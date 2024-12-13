@@ -82,6 +82,8 @@ clf = RandomForestClassifier(random_state=42)
 missing_data = X.isnull().sum()
 
 # Drop rows with missing values in any column
+X_clean = pd.get_dummies(X_clean, drop_first=True)
+st.write(X_clean.isnull().sum())
 X_clean = X.dropna()
 
 # Drop columns with missing values
@@ -91,6 +93,9 @@ X_clean = X.dropna(axis=1)
 missing_data_after = X_clean.isnull().sum()
 st.write("Missing Values After Cleaning:", missing_data_after)
 
+y = y_raw.apply(target_encode)
+st.write(y.isnull().sum())  # Check if there are missing values in y
+st.write(X_clean.shape)
 # Step 4: Train model with cleaned data
 clf.fit(X_clean, y)
 
